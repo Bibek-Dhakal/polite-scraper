@@ -1,0 +1,72 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Logs and runtime output
+logs/
+*.log
+*.log.*
+pids/
+*.pid
+*.seed
+
+# Caches and temporary files
+.cache/
+.parcel-cache/
+.eslintcache
+.npm/
+.pnpm-store/
+.yarn/
+.turbo/
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Test and coverage output
+coverage/
+.nyc_output/
+test-results/
+
+# Build and distribution output
+dist/
+build/
+out/
+lib/
+*.tsbuildinfo
+
+# Scraper artifacts and patch/diff files
+scraped/
+downloads/
+screenshots/
+PATCH.md
+*.patch
+*.diff
+*.rej
+*.orig
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.suo
+*.user
+*.userossc
+*.sln.docstates
+*.swp
+*.swo
+*~
