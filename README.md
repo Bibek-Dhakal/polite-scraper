@@ -28,9 +28,30 @@ npm start
 The run fetches and caches the first three catalogue pages and their 60 unique
 products. Requests identify themselves as
 `PoliteBooksScraper/1.0 (+https://github.com/Bibek-Dhakal/polite-scraper)`, have a
-timeout, check HTTP status, retry a timeout or 5xx once, and wait at least 500ms
-between real requests. Cache hits do not wait. A page failure is isolated from
-the rest of the crawl.
+timeout, check HTTP status, retry timeouts, 429s, and 5xx responses up to three
+times using exponential backoff and small jitter, and honor `Retry-After`.
+There are no retries for 403 or 404. Requests wait at least 500ms (including
+retries) and cache hits do not wait. JSON-lines retry logs are written to
+`logs/scraper.log`; each event includes the URL, status, attempt, and retry wait.
+A page failure is isolated from the rest of the crawl.
+
+## Optional outputs
+
+In addition to `output/books.json`, `output/errors.json`, and
+`output/run-report.json`, each run writes:
+
+- `output/books.csv`: validated records flattened to one row. The columns are
+  `title, product_url, price_text, price_gbp, availability_text, rating_text,
+  description, source_page, fetched_at`; values are RFC-style CSV quoted and
+  embedded quotes are doubled. Nullable descriptions become empty cells.
+- `output/record-hashes.json`: the previous validated records and stable SHA-256
+  hashes (the fetch timestamp is deliberately excluded). The report's
+  `changes` object gives `new`, `changed`, `unchanged`, and `gone` counts.
+- `output/dashboard.html`: a tiny local, self-contained dashboard with record
+  count, price range, failure count, and last fresh time. Open it locally after
+  `npm start`.
+
+All cache, output, and log artifacts are ignored by Git and are never committed.
 
 ## Record schema
 
@@ -60,7 +81,15 @@ node src/index.js --fake-url https://books.toscrape.com/does-not-exist.html
 Generated `output/books.json`, `output/errors.json`, and `output/run-report.json`
 are idempotently replaced on each run. Invalid records are excluded from
 `books.json` and described in `errors.json`; records include raw fields plus
-numeric `price_gbp`.
+numeric `price_gbp`. The change comparison is against the immediately previous
+successful output snapshot, so the first run reports all validated records as
+new.
+
+Tests cover URL and price parsing, missing descriptions, extra whitespace,
+malformed selector fixtures, CSV quoting, stable change detection, and the
+dashboard output. Run `npm test` for the fixture suite. `npm start` performs a
+live run; the `--fake-url https://books.toscrape.com/does-not-exist.html`
+option is a local failure-isolation smoke test.
 
 ## Sample run report
 
