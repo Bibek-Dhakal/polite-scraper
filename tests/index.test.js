@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalizePrice, absoluteUrl, parseCatalogue, parseDetail, BookSchema } from '../src/index.js';
+import { normalizePrice, absoluteUrl, parseCatalogue, parseDetail, nextCatalogueUrl, BookSchema } from '../src/index.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = name => fs.readFile(path.join(here, '..', 'fixtures', name), 'utf8');
@@ -14,6 +14,12 @@ test('normalizes pound prices to numbers', () => {
 });
 test('resolves relative URLs against the source page', () => {
   assert.equal(absoluteUrl('../books/x.html', 'https://books.toscrape.com/catalogue/page-2.html'), 'https://books.toscrape.com/books/x.html');
+});
+test('follows the catalogue next link', () => {
+  assert.equal(
+    nextCatalogueUrl('<li class="next"><a href="page-2.html">next</a></li>', 'https://books.toscrape.com/catalogue/page-1.html'),
+    'https://books.toscrape.com/catalogue/page-2.html'
+  );
 });
 test('missing description is represented as null', async () => {
   const html = '<div class="product_main"><h1>Book</h1><p class="price_color">£2.00</p><p class="availability">In stock</p><p class="star-rating Two"></p></div>';

@@ -17,6 +17,8 @@ pids/
 
 # Caches and temporary files
 .cache/
+cache/
+output/
 .parcel-cache/
 .eslintcache
 .npm/
@@ -70,5 +72,3 @@ $RECYCLE.BIN/
 *.swp
 *.swo
 *~
-cache/
-output/

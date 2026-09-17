@@ -39,6 +39,11 @@ export function parseCatalogue(html, sourcePage) {
       rating_text: parseRating($(el).find('.star-rating').attr('class')), description: null, source_page: sourcePage, fetched_at: new Date().toISOString() });
   }); return books;
 }
+export function nextCatalogueUrl(html, sourcePage) {
+  const $ = cheerio.load(html);
+  const href = $('li.next a').attr('href');
+  return href ? absoluteUrl(href, sourcePage) : null;
+}
 export function parseDetail(html, url, sourcePage, fallback = {}) {
   const $ = cheerio.load(html); const description = $('#product_description').next('p').text().trim();
   const rating = parseRating($('.star-rating').attr('class'));
@@ -83,12 +88,13 @@ export async function run({ fakeUrl = null } = {}) {
   const fetchPage = createFetcher(); const failures = []; const raw = [];
   const robotsUrl = new URL('robots.txt', BASE_URL).href;
   try { await fetchPage(robotsUrl, stats); } catch (error) { stats.failed++; failures.push({ url: robotsUrl, error: error.message }); }
-  for (let page = 1; page <= 3; page++) {
-    const source = new URL(`catalogue/page-${page}.html`, BASE_URL).href;
+  let source = new URL('catalogue/page-1.html', BASE_URL).href;
+  for (let page = 1; page <= 3 && source; page++) {
     try {
       const { html } = await fetchPage(source, stats);
       const catalogue = parseCatalogue(html, source);
       for (const item of catalogue) raw.push(item);
+      source = nextCatalogueUrl(html, source);
     } catch (error) { stats.failed++; failures.push({ url: source, error: error.message }); }
   }
   const unique = [...new Map(raw.map(item => [item.product_url, item])).values()];
